@@ -203,3 +203,5 @@ This vulnerability demonstrates a critical breakdown in trust boundaries between
 <img width="1366" height="650" alt="Capturepif" src="https://github.com/user-attachments/assets/3ca46722-fa54-4c9c-ac7b-1d50f06afc02" />
 
 </div>
+
+*Written by [Possible (@SIEM Latency)](https://x.com/SIEM_Latency)) — The Cyber Lab Journal*
