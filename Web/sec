@@ -1,1 +1,480 @@
+# MD5 Password Cracking Challenge Report
+
+## Overview
+
+This project demonstrates an offline password cracking attack against weak MD5 password hashes using Hashcat and common password wordlists. The challenge simulates a real-world scenario where a web application stores user passwords using insecure hashing algorithms without proper salting or modern cryptographic protections.
+
+The objective was to:
+
+* Crack MD5 password hashes
+* Understand dictionary-based password attacks
+* Learn Hashcat workflows
+* Analyze weak credential storage risks
+* Understand OWASP cryptographic failures
+* Document findings and remediation guidance
+
+---
+
+# Challenge Information
+
+| Item           | Details                     |
+| -------------- | --------------------------- |
+| Challenge Type | Password Cracking           |
+| Hash Algorithm | MD5                         |
+| Total Hashes   | 500+                        |
+| Attack Method  | Dictionary Attack           |
+| Tool Used      | Hashcat                     |
+| Environment    | Linux Training Shell        |
+| Wordlist       | rockyou.txt                 |
+| Objective      | Recover plaintext passwords |
+
+---
+
+# Environment Setup
+
+## Operating System
+
+* Kali Linux
+
+## Tools Used
+
+### Hashcat
+
+Official Website:
+[https://hashcat.net/hashcat/](https://hashcat.net/hashcat/)
+
+### Wordlist
+
+rockyou.txt
+
+### Supporting Linux Commands
+
+* ls
+* pwd
+* cat
+* grep
+* awk
+* wc
+
+---
+
+# Initial Enumeration
+
+The training shell environment contained multiple files associated with penetration testing labs and password cracking exercises.
+
+## Files Observed
+
+```bash
+ls
+```
+
+Relevant files:
+
+```txt
+md5_hashes_500.txt
+rockyou.txt
+hashcat-7.1.1
+```
+
+---
+
+# Attack Methodology
+
+## Phase 1 — Hash Identification
+
+The hashes were identified as raw MD5 hashes.
+
+Example:
+
+```txt
+5d41402abc4b2a76b9719d911017c592
+```
+
+Characteristics:
+
+* 32 hexadecimal characters
+* Unsalted
+* Fast hashing algorithm
+* Vulnerable to offline cracking
+
+---
+
+# Phase 2 — Dictionary Attack
+
+A dictionary attack was performed using Hashcat and the rockyou.txt password list.
+
+## Command Used
+
+```bash
+hashcat -m 0 md5_hashes_500.txt rockyou.txt --outfile=results.txt --outfile-format=2
+```
+
+---
+
+# Command Breakdown
+
+| Option             | Description                  |
+| ------------------ | ---------------------------- |
+| hashcat            | Password cracking tool       |
+| -m 0               | MD5 hash mode                |
+| md5_hashes_500.txt | Input hash file              |
+| rockyou.txt        | Password wordlist            |
+| --outfile          | Save cracked results         |
+| --outfile-format=2 | Save in hash:password format |
+
+---
+
+# Hashcat Execution Output
+
+## Key Results
+
+```txt
+Recovered........: 108/503 (21.47%)
+Status...........: Exhausted
+```
+
+### Meaning
+
+* 108 hashes successfully cracked
+* Entire wordlist tested
+* Remaining hashes not present in the dictionary
+
+---
+
+# Password Recovery Statistics
+
+| Metric               | Result         |
+| -------------------- | -------------- |
+| Total Unique Hashes  | 503            |
+| Successfully Cracked | 108            |
+| Crack Rate           | 21.47%         |
+| Attack Type          | Dictionary     |
+| Wordlist Size        | 14M+ passwords |
+
+---
+
+# Technical Analysis
+
+## Why MD5 Is Insecure
+
+MD5 is considered cryptographically broken because:
+
+* Extremely fast hashing speed
+* No adaptive cost factor
+* Vulnerable to GPU acceleration
+* Susceptible to rainbow table attacks
+* No built-in salting
+* Deprecated for password storage
+
+Attackers can test millions or billions of password guesses per second.
+
+---
+
+# Security Risks Identified
+
+## Weak Password Storage
+
+The use of MD5 introduces severe security risks.
+
+### Potential Impacts
+
+* Credential compromise
+* Account takeover
+* Privilege escalation
+* Credential stuffing
+* Lateral movement
+* Sensitive data exposure
+
+---
+
+# OWASP Classification
+
+## OWASP Top 10 Mapping
+
+### A02:2021 – Cryptographic Failures
+
+The application demonstrates improper cryptographic implementation by using:
+
+* Weak password hashing
+* Unsalted hashes
+* Fast hashing algorithms
+
+Official OWASP Website:
+[https://owasp.org/](https://owasp.org/)
+
+---
+
+# Real-World Attack Scenario
+
+## Example Attack Chain
+
+```txt
+Application breach
+↓
+Database dump obtained
+↓
+MD5 hashes extracted
+↓
+Offline cracking attack
+↓
+Weak passwords recovered
+↓
+Credential reuse attacks
+↓
+Privilege escalation
+↓
+Data compromise
+```
+
+---
+
+# Hashcat Concepts Learned
+
+## Potfile
+
+Hashcat stores cracked hashes internally in a potfile.
+
+Example:
+
+```txt
+~/.hashcat/hashcat.potfile
+```
+
+Benefits:
+
+* Prevents re-cracking already recovered passwords
+* Speeds up future operations
+* Allows exporting previous results using:
+
+```bash
+hashcat --show
+```
+
+---
+
+# Common Errors Encountered
+
+## Missing Wordlist Error
+
+```txt
+rockyou.txt: No such file or directory
+```
+
+### Cause
+
+The wordlist was not present in the working directory.
+
+### Resolution
+
+Download or move rockyou.txt into the current directory.
+
+---
+
+# Incorrect Outfile Usage
+
+## Incorrect Command
+
+```bash
+hashcat -m 0 md5_hashes_500.txt rockyou.txt hash.txt
+```
+
+### Error
+
+```txt
+hash.txt: No such file or directory
+```
+
+### Cause
+
+Hashcat interpreted hash.txt as an input file.
+
+### Correct Usage
+
+```bash
+hashcat -m 0 md5_hashes_500.txt rockyou.txt --outfile=hash.txt
+```
+
+---
+
+# Token Length Exception
+
+## Error
+
+```txt
+Token length exception
+```
+
+### Cause
+
+Malformed or invalid hashes inside the file.
+
+### Resolution
+
+Filter only valid MD5 hashes:
+
+```bash
+grep -E '^[a-fA-F0-9]{32}$' md5_hashes_500.txt > clean_hashes.txt
+```
+
+---
+
+# Performance Analysis
+
+## Hashcat Speed
+
+```txt
+Speed.#01........: 1581.9 kH/s
+```
+
+### Meaning
+
+Approximately 1.5 million password guesses per second were tested on CPU.
+
+GPU acceleration would significantly increase performance.
+
+---
+
+# Security Recommendations
+
+## Replace MD5
+
+MD5 should never be used for password storage.
+
+### Recommended Algorithms
+
+| Algorithm | Status             |
+| --------- | ------------------ |
+| bcrypt    | Recommended        |
+| Argon2    | Highly Recommended |
+| scrypt    | Recommended        |
+| MD5       | Insecure           |
+| SHA1      | Insecure           |
+
+---
+
+# Password Policy Recommendations
+
+Implement strong password policies:
+
+* Minimum 12–16 characters
+* MFA enforcement
+* Password rotation policies
+* Credential reuse detection
+* Password complexity validation
+
+---
+
+# Defensive Recommendations
+
+## Secure Password Storage
+
+Use:
+
+* Per-user salts
+* Adaptive hashing
+* High computational cost
+* MFA
+* Login throttling
+* Account lockout mechanisms
+
+---
+
+# Pentesting Workflow Learned
+
+## Attack Chain
+
+```txt
+Reconnaissance
+↓
+File discovery
+↓
+Hash identification
+↓
+Dictionary attack
+↓
+Password recovery
+↓
+Credential analysis
+↓
+Risk assessment
+↓
+Reporting
+```
+
+---
+
+# Evidence of Successful Cracking
+
+## Example Output
+
+```txt
+5d41402abc4b2a76b9719d911017c592:hello
+098f6bcd4621d373cade4e832627b4f6:test
+```
+
+---
+
+# Lessons Learned
+
+This challenge demonstrated:
+
+* Offline password cracking workflows
+* MD5 weaknesses
+* Hashcat usage
+* Dictionary attacks
+* Wordlist-based attacks
+* Password recovery operations
+* Cryptographic failure analysis
+* Security reporting methodology
+
+---
+
+# Ethical Considerations
+
+Password cracking should only be performed:
+
+* In labs
+* In training environments
+* During authorized penetration tests
+* With explicit written permission
+
+Unauthorized password cracking against real systems is illegal and unethical.
+
+---
+
+# References
+
+## OWASP
+
+[https://owasp.org/](https://owasp.org/)
+
+## Hashcat
+
+[https://hashcat.net/hashcat/](https://hashcat.net/hashcat/)
+
+## SecLists
+
+[https://github.com/danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)
+
+## PortSwigger Web Security Academy
+
+[https://portswigger.net/web-security](https://portswigger.net/web-security)
+
+---
+
+# Conclusion
+
+The exercise successfully demonstrated how weak password hashing implementations using MD5 can be exploited through offline cracking attacks.
+
+A total of 108 password hashes were recovered using a standard dictionary attack against a large common-password wordlist.
+
+The findings reinforce the importance of:
+
+* Secure password hashing
+* Modern cryptographic standards
+* Strong password policies
+* Defense-in-depth security controls
+* Regular security assessments
+
+Organizations using MD5 for password storage remain highly vulnerable to credential compromise and account takeover attacks.
 
